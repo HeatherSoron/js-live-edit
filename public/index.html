@@ -1,0 +1,56 @@
+<html>
+	<head>
+		<script src="./socket.io/socket.io.js"></script>
+		<style>
+			pre {
+				counter-reset: line;
+			}
+			code {
+				counter-increment: line;
+			}
+
+			code:before {
+				content: counter(line);
+				-webkit-user-select: none;
+				padding-right: 3px;
+				margin-right: 2px;
+
+				background-color: #ddd;
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<span id="filename">...</span>
+		</div>
+		<iframe style="width: 100%; height: 40%; border: 0px;">
+		</iframe>
+		<pre style="width: 100%; height: 40%;"></pre>
+		<script>window.onerror = alert;</script>
+		<script>
+			const socket = io({path: "/live-edit/socket.io"});
+
+			const iframe = document.querySelector('iframe');
+			const pre = document.querySelector('pre');
+			const fn_out = document.querySelector('#filename');
+
+			socket.on('hello', msg => {
+				iframe.srcdoc = msg;
+			})
+			
+			socket.on('update', (data) => {
+				fn_out.innerText = data.filename;
+				iframe.srcdoc = data.src;
+
+				while (pre.firstChild) {
+					pre.firstChild.remove();
+				}
+				data.src.split('\n').forEach(line => {
+					const block = document.createElement('code');
+					block.innerText = line + '\n';
+					pre.appendChild(block);
+				})
+			})
+		</script>
+	</body>
+</html>
